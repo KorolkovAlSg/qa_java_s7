@@ -33,8 +33,8 @@ public class CourierLoginTest {
     }
 
     @Test
-    @DisplayName("Log In a courier without a LOGIN of /api/v1/courier/login and checking status code")
-    @Description("Log In a courier without a login in the request body, status code 400 and error text")
+    @DisplayName("Log In a courier without a LOGIN of /api/v1/courier/login")
+    @Description("Log In a courier without a login in the request body, checking the error text \"Недостаточно данных для входа\"|code 400")
     public void logInCourierWithoutLoginParamCode400(){
         profile.setLogin(null);
 
@@ -46,13 +46,14 @@ public class CourierLoginTest {
 
     //Проблемный тест, завершается по таймауту с 504 кодом.
     @Test
-    @DisplayName("Log In a courier without a PASSWORD of /api/v1/courier/login and checking status code")
-    @Description("Log In a courier without a password in the request body, response error text")
+    @DisplayName("Log In a courier without a PASSWORD of /api/v1/courier/login")
+    @Description("Log In a courier without a password in the request body, checking the error text \"Недостаточно данных для входа\"|code 400")
     public void logInCourierWithoutPassParamErrorText(){
         profile.setPassword(null);
 
         courier.logInCourier()
-                .then()
+                .then().statusCode(SC_BAD_REQUEST)
+                .and()
                 .assertThat().body("message", equalTo("Недостаточно данных для входа"));
     }
 
@@ -63,9 +64,10 @@ public class CourierLoginTest {
         profile.setLogin("QAS2");
 
         courier.logInCourier()
-                .then().assertThat().body("message", equalTo("Учетная запись не найдена"))
+                .then()
+                .statusCode(SC_NOT_FOUND)
                 .and()
-                .statusCode(SC_NOT_FOUND);
+                .assertThat().body("message", equalTo("Учетная запись не найдена"));
     }
 
     @Test
@@ -75,21 +77,10 @@ public class CourierLoginTest {
         profile.setPassword("incorrect");
 
         courier.logInCourier()
-                .then().assertThat().body("message", equalTo("Учетная запись не найдена"))
+                .then()
+                .statusCode(SC_NOT_FOUND)
                 .and()
-                .statusCode(SC_NOT_FOUND);
-    }
-
-    @Test
-    @DisplayName("Log In a courier without a required parameter of /api/v1/courier/login and checking error text")
-    @Description("Log In a courier without a required parameter and checking the error text \"Недостаточно данных для входа\"|code 400")
-    public void logInCourWithoutOneParamErrorTextAndCodeInResponse(){
-        profile.setLogin(null);
-
-        courier.logInCourier()
-                .then().assertThat().body("message", equalTo("Недостаточно данных для входа"))
-                .and()
-                .statusCode(SC_BAD_REQUEST);
+                .assertThat().body("message", equalTo("Учетная запись не найдена"));
     }
 
     @Test
@@ -99,10 +90,12 @@ public class CourierLoginTest {
         profile.setLogin("MeNonExists");
 
         courier.logInCourier()
-                .then().assertThat().body("id", equalTo(null))
+                .then()
+                .statusCode(SC_NOT_FOUND)
                 .and()
-                .body("message", equalTo("Учетная запись не найдена"))
-                .statusCode(SC_NOT_FOUND);
+                .assertThat().body("id", equalTo(null))
+                .and()
+                .body("message", equalTo("Учетная запись не найдена"));
     }
 
     @Test
@@ -110,7 +103,10 @@ public class CourierLoginTest {
     @Description("Checking the return of the ID after successful logging. for /api/v1/courier/login")
     public void courierLogInReturnIdAndCode200(){
         courier.logInCourier()
-                .then().assertThat().body("id", notNullValue());
+                .then()
+                .statusCode(SC_OK)
+                .and()
+                .assertThat().body("id", notNullValue());
     }
 
     @After

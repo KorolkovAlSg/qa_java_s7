@@ -5,6 +5,7 @@ import io.restassured.RestAssured;
 import org.junit.Before;
 import org.junit.Test;
 
+import static org.apache.http.HttpStatus.SC_OK;
 import static org.hamcrest.Matchers.*;
 
 public class GetOrdersTest {
@@ -23,6 +24,8 @@ public class GetOrdersTest {
     public void getOrdersListOrders(){
         order.getOrders()
                 .then()
+                .statusCode(SC_OK)
+                .and()
                 .assertThat().body("orders", hasSize(notNullValue()));
     }
 }

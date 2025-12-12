@@ -22,21 +22,15 @@ public class CourierCreationTest {
     }
 
     @Test
-    @DisplayName("Create new courier of /api/v1/courier")
+    @DisplayName("Create new courier of /api/v1/courier and checking the response body")
     @Description("Basic test for /api/v1/courier")
-    public void createNewCourierRespBodyOkTrue(){
+    public void createNewCourierCode201RespBodyOkTrue(){
         courier.createCourier()
                 .then()
+                .statusCode(SC_CREATED)
+                .and()
                 .assertThat()
                 .body("ok", equalTo(true));
-    }
-
-    @Test
-    @DisplayName("Creating a courier of /api/v1/courier and checking the response body")
-    @Description("Checking the response body \"{\"ok\": true}\" after creating a new courier")
-    public void createNewCourierOkTrueInResponse(){
-        courier.createCourier()
-                .then().assertThat().body("ok", equalTo(true));
     }
 
     @Test
@@ -45,53 +39,49 @@ public class CourierCreationTest {
     public void createIdenticalCourCode409For2IterAndErrMessage(){
         courier.createCourier();
         courier.createCourier()
-                .then().assertThat().body("message", equalTo("Этот логин уже используется"))
-                .and().statusCode(SC_CONFLICT);
+                .then()
+                .statusCode(SC_CONFLICT)
+                .and()
+                .assertThat().body("message", equalTo("Этот логин уже используется"));
     }
 
     @Test
     @DisplayName("Creating a courier without a password of /api/v1/courier and checking status code")
-    @Description("Creating a courier without a password in the request body and checking the error text \"Недостаточно данных для создания учетной записи\" in response body")
-    public void createNewCourierWithoutPassParamErrorResponseMessage(){
+    @Description("Creating a courier without a password in the request body and checking the error text \"Недостаточно данных для создания учетной записи\" in response body|code 400")
+    public void createNewCourierWithoutPassParam400ErrorResponseMessage(){
         profile.setPassword(null);
 
         courier.createCourier()
                 .then()
+                .statusCode(SC_BAD_REQUEST)
+                .and()
                 .assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
     @Test
     @DisplayName("Creating a courier without a login of /api/v1/courier")
-    @Description("Creating a courier without a login in the request body and checking the error text \"Недостаточно данных для создания учетной записи\" in response body")
-    public void createNewCourierWithoutLoginParamErrorResponseMessage(){
+    @Description("Creating a courier without a login in the request body and checking the error text \"Недостаточно данных для создания учетной записи\" in response body|code 400")
+    public void createNewCourierWithoutLoginParam400ErrorResponseMessage(){
         profile.setLogin(null);
 
         courier.createCourier()
                 .then()
+                .statusCode(SC_BAD_REQUEST)
+                .and()
                 .assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
     @Test
     @DisplayName("Creating a courier without a firstName of /api/v1/courier")
-    @Description("Creating a courier without a firstName in the request body and checking the error text \"Недостаточно данных для создания учетной записи\" in response body")
+    @Description("Creating a courier without a firstName in the request body and checking the error text \"Недостаточно данных для создания учетной записи\" in response body|code 400")
     public void createNewCourierWithoutFirstNameErrorResponseMessage(){
         profile.setFirstName(null);
 
         courier.createCourier()
                 .then()
+                .statusCode(SC_BAD_REQUEST)
+                .and()
                 .assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"));
-    }
-
-
-    @Test
-    @DisplayName("Creating courier without a required parameter of /api/v1/courier and checking error text")
-    @Description("Creating a courier without a required parameter and checking the error text \"Недостаточно данных для создания учетной записи\"|code 400")
-    public void crNewCourWithoutOneParamErTextAndCodeInResponse(){
-        profile.setLogin(null);
-
-        courier.createCourier()
-                .then().assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"))
-                .and().statusCode(SC_BAD_REQUEST);
     }
 
     @After
