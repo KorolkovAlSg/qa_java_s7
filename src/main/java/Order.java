@@ -1,3 +1,4 @@
+import constans.Endpoints;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 
@@ -12,6 +13,9 @@ public class Order {
         this.parameters = parameters;
     }
 
+    public Order(){
+
+    }
     @Step("Send POST request to /api/v1/orders")
     public Response createOrder(){
         response =
@@ -20,7 +24,7 @@ public class Order {
                         .and()
                         .body(parameters)
                         .when()
-                        .post("/api/v1/orders");
+                        .post(Endpoints.ORDER);
         return response;
     }
 
@@ -28,6 +32,14 @@ public class Order {
     public void cancelOrder(){
         given()
                 .when()
-                .put("/api/v1/orders/cancel?track=" + response.path("track"));
+                .put(Endpoints.ORDER + "/cancel?track=" + response.path("track"));
+    }
+
+    @Step("Send GET request to /api/v1/orders")
+    public Response getOrders() {
+        response =
+                given()
+                        .get(Endpoints.ORDER);
+        return response;
     }
 }

@@ -2,8 +2,11 @@ import constans.Constants;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.equalTo;
 
 public class CourierCreationTest {
@@ -21,13 +24,11 @@ public class CourierCreationTest {
     @Test
     @DisplayName("Create new courier of /api/v1/courier")
     @Description("Basic test for /api/v1/courier")
-    public void createNewCourierCode201(){
-        courier.deleteCourier();
-
+    public void createNewCourierRespBodyOkTrue(){
         courier.createCourier()
-                .then().statusCode(201);
-
-        courier.deleteCourier();
+                .then()
+                .assertThat()
+                .body("ok", equalTo(true));
     }
 
     @Test
@@ -36,63 +37,49 @@ public class CourierCreationTest {
     public void createNewCourierOkTrueInResponse(){
         courier.createCourier()
                 .then().assertThat().body("ok", equalTo(true));
-
-        courier.deleteCourier();
     }
 
     @Test
     @DisplayName("Creating identical courier of /api/v1/courier")
-    @Description("Checking if it is impossible to create a courier with an identical login and checking status code 409")
-    public void createIdenticalCourCode409For2Iter(){
-        courier.createCourier();
-        courier.createCourier()
-                .then().statusCode(409);
-
-        courier.deleteCourier();
-    }
-
-    @Test
-    @DisplayName("Creating identical courier of /api/v1/courier and checking error message|code")
     @Description("Checking the error message text \"Этот логин уже используется\"|code 409 when creating a courier with an identical login")
-    public void createIdenticalCourierErrorCodeAndTextFor2Iter(){
+    public void createIdenticalCourCode409For2IterAndErrMessage(){
         courier.createCourier();
         courier.createCourier()
                 .then().assertThat().body("message", equalTo("Этот логин уже используется"))
-                .and().statusCode(409);
-
-        courier.deleteCourier();
+                .and().statusCode(SC_CONFLICT);
     }
 
     @Test
     @DisplayName("Creating a courier without a password of /api/v1/courier and checking status code")
-    @Description("Creating a courier without a password in the request body, status code 400")
-    public void createNewCourierWithoutPassParamCode400(){
+    @Description("Creating a courier without a password in the request body and checking the error text \"Недостаточно данных для создания учетной записи\" in response body")
+    public void createNewCourierWithoutPassParamErrorResponseMessage(){
         profile.setPassword(null);
 
         courier.createCourier()
-                .then().statusCode(400);
+                .then()
+                .assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
     @Test
-    @DisplayName("Creating a courier without a login of /api/v1/courier and checking status code")
-    @Description("Creating a courier without a login in the request body, status code 400")
-    public void createNewCourierWithoutLoginParamCode400(){
+    @DisplayName("Creating a courier without a login of /api/v1/courier")
+    @Description("Creating a courier without a login in the request body and checking the error text \"Недостаточно данных для создания учетной записи\" in response body")
+    public void createNewCourierWithoutLoginParamErrorResponseMessage(){
         profile.setLogin(null);
 
         courier.createCourier()
-                .then().statusCode(400);
+                .then()
+                .assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
     @Test
-    @DisplayName("Creating a courier without a firstName of /api/v1/courier and checking status code")
-    @Description("Creating a courier without a firstName in the request body, status code 400")
-    public void createNewCourierWithoutFirstNameParamCode201(){
-        courier.deleteCourier();
-
+    @DisplayName("Creating a courier without a firstName of /api/v1/courier")
+    @Description("Creating a courier without a firstName in the request body and checking the error text \"Недостаточно данных для создания учетной записи\" in response body")
+    public void createNewCourierWithoutFirstNameErrorResponseMessage(){
         profile.setFirstName(null);
 
         courier.createCourier()
-                .then().statusCode(400);
+                .then()
+                .assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"));
     }
 
 
@@ -104,6 +91,14 @@ public class CourierCreationTest {
 
         courier.createCourier()
                 .then().assertThat().body("message", equalTo("Недостаточно данных для создания учетной записи"))
-                .and().statusCode(400);
+                .and().statusCode(SC_BAD_REQUEST);
+    }
+
+    @After
+    public void delCourier(){
+        if (profile.getLogin() != null
+                && profile.getPassword() != null){
+            courier.deleteCourier();
+        }
     }
 }

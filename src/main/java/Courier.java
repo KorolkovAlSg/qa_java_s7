@@ -1,3 +1,4 @@
+import constans.Endpoints;
 import io.qameta.allure.Step;
 import io.restassured.response.Response;
 
@@ -20,7 +21,7 @@ public class Courier {
                         .and()
                         .body(profile)
                         .when()
-                        .post("/api/v1/courier");
+                        .post(Endpoints.COURIER);
         return response;
     }
 
@@ -32,7 +33,7 @@ public class Courier {
                         .and()
                         .body(profile)
                         .when()
-                        .post("/api/v1/courier/login");
+                        .post(Endpoints.COURIER_LOGIN);
         return response;
     }
 
@@ -41,7 +42,7 @@ public class Courier {
         response = logInCourier();
         given()
                 .when()
-                .delete("/api/v1/courier/" + response.body().path("id"));
+                .delete(Endpoints.COURIER + "/" + response.body().path("id"));
 
     }
 }

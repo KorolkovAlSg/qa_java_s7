@@ -2,6 +2,7 @@ import constans.Constants;
 import io.qameta.allure.Description;
 import io.qameta.allure.junit4.DisplayName;
 import io.restassured.RestAssured;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,6 +10,7 @@ import org.junit.runners.Parameterized;
 
 import java.util.List;
 
+import static org.apache.http.HttpStatus.*;
 import static org.hamcrest.Matchers.notNullValue;
 
 @RunWith(Parameterized.class)
@@ -62,10 +64,13 @@ public class OrderCreationTest {
     public void createNewOrderCode201andBodyWithTrack(){
         order.createOrder()
                 .then()
-                .statusCode(201)
+                .statusCode(SC_CREATED)
                 .and()
                 .assertThat().body("track", notNullValue());
+    }
 
+    @After
+    public void cancelOrder(){
         order.cancelOrder();
     }
 
